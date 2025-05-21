@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Pinterest Clone</title>
+<style>
+  /* Reset and base */
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #fafafa;
+    color: #222;
+  }
+
+  /* Header styles */
+  header {
+    background-color: white;
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 1px 4px rgb(0 0 0 / 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    font-family: 'Billabong', cursive, 'Segoe UI', sans-serif;
+    font-size: 36px;
+    color: #e60023;
+    user-select: none;
+    cursor: default;
+    margin-right: 24px;
+  }
+
+  .search-bar {
+    flex: 1;
+    max-width: 480px;
+    position: relative;
+  }
+
+  .search-bar input {
+    width: 100%;
+    padding: 10px 44px 10px 16px;
+    font-size: 16px;
+    border-radius: 24px;
+    border: 1px solid #ddd;
+    outline: none;
+    transition: box-shadow 0.2s ease;
+  }
+
+  .search-bar input:focus {
+    box-shadow: 0 0 8px 2px #e60023aa;
+    border-color: #e60023;
+  }
+
+  .search-bar svg {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    fill: #888;
+  }
+
+  /* Main content */
+  main {
+    max-width: 1280px;
+    margin: 24px auto;
+    padding: 0 12px;
+  }
+
+  /* Masonry grid layout using CSS columns */
+  .pins-grid {
+    column-count: 4;
+    column-gap: 16px;
+  }
+
+  @media (max-width: 1100px) {
+    .pins-grid {
+      column-count: 3;
+    }
+  }
+
+  @media (max-width: 750px) {
+    .pins-grid {
+      column-count: 2;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .pins-grid {
+      column-count: 1;
+    }
+  }
+
+  /* Each pin card */
+  .pin {
+    background: white;
+    margin-bottom: 16px;
+    border-radius: 16px;
+    overflow: hidden;
+    display: inline-block;
+    width: 100%;
+    cursor: pointer;
+    box-shadow: 0 1px 6px rgb(0 0 0 / 0.12);
+    transition: box-shadow 0.3s ease;
+    position: relative;
+  }
+  .pin:hover {
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  }
+
+  .pin img {
+    width: 100%;
+    display: block;
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+    object-fit: cover;
+    max-height: 400px;
+    transition: transform 0.3s ease;
+  }
+
+  /* Zoom effect on hover */
+  .pin:hover img {
+    transform: scale(1.05);
+  }
+
+  .pin-content {
+    padding: 12px 16px 16px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .pin-text {
+    flex-grow: 1;
+    font-weight: 600;
+    font-size: 15px;
+    color: #333;
+    margin-bottom: 12px;
+  }
+
+  /* Save button */
+  .save-btn {
+    align-self: flex-end;
+    background-color: #e60023;
+    border-radius: 24px;
+    padding: 6px 16px;
+    color: white;
+    font-weight: 600;
+    font-size: 14px;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    user-select: none;
+  }
+
+  .save-btn.saved {
+    background-color: #444;
+  }
+
+  .save-btn:hover {
+    background-color: #b0001b;
+  }
+
+  /* Tooltip for saved */
+  .save-btn.saved::after {
+    content: "Saved";
+    position: absolute;
+    background-color: #444;
+    color: white;
+    font-size: 12px;
+    padding: 3px 8px;
+    border-radius: 8px;
+    top: -32px;
+    right: 0;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transform: translateY(5px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+  .save-btn.saved:hover::after {
+    opacity: 1;
+    transform: translateY(0);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo" aria-label="Pinterest">Pinterest</div>
+  <div class="search-bar">
+    <input type="search" id="searchInput" placeholder="Search Pins" aria-label="Search Pins" />
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M10 18c4.418 0 8-3.582 8-8s-3.582-8-8-8-8 3.582-8 8 3.582 8 8 8zm8.707 1.293-4.82-4.82A6.962 6.962 0 0110 16c-3.866 0-7-3.134-7-7s3.134-7 7-7 7 3.134 7 7c0 1.61-.596 3.088-1.586 4.196l4.82 4.82-1.414 1.414z"/></svg>
+  </div>
+</header>
+
+<main>
+  <div class="pins-grid" id="pinsGrid" aria-live="polite" aria-label="Pins gallery">
+    <!-- Pins will be dynamically inserted here -->
+  </div>
+</main>
+
+<script>
+  // Sample pins data - images from unsplash and captions
+  const pinsData = [
+    { id: 1, image: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80', title: 'Mountain landscape' },
+    { id: 2, image: 'https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=600&q=80', title: 'City lights' },
+    { id: 3, image: 'https://images.unsplash.com/photo-1550439062-609e1531270e?auto=format&fit=crop&w=600&q=80', title: 'Delicious food' },
+    { id: 4, image: 'https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?auto=format&fit=crop&w=600&q=80', title: 'Ocean waves' },
+    { id: 5, image: 'https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=600&q=80', title: 'Vintage camera' },
+    { id: 6, image: 'https://images.unsplash.com/photo-1468071174046-657d9d351a40?auto=format&fit=crop&w=600&q=80', title: 'Autumn forest' },
+    { id: 7, image: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80', title: 'Bike in the sunset' },
+    { id: 8, image: 'https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=600&q=80', title: 'Cup of coffee' },
+    { id: 9, image: 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=600&q=80', title: 'Colorful balloons' },
+    { id: 10, image: 'https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=600&q=80', title: 'Desert dunes' }
+  ];
+
+  const pinsGrid = document.getElementById('pinsGrid');
+  const savedPinsKey = 'savedPinterestPins';
+
+  // Load saved pins from localStorage
+  function loadSavedPins() {
+    const saved = localStorage.getItem(savedPinsKey);
+    return saved ? JSON.parse(saved) : [];
+  }
+
+  // Save pins to localStorage
+  function saveSavedPins(savedPins) {
+    localStorage.setItem(savedPinsKey, JSON.stringify(savedPins));
+  }
+
+  // Render pins
+  function renderPins(pins, savedPins) {
+    pinsGrid.innerHTML = '';
+    pins.forEach(pin => {
+      const isSaved = savedPins.includes(pin.id);
+
+      const pinEl = document.createElement('article');
+      pinEl.className = 'pin';
+      pinEl.setAttribute('tabindex', '0');
+      pinEl.setAttribute('aria-label', pin.title + (isSaved ? ', saved' : ''));
+
+      pinEl.innerHTML = `
+        <img src="${pin.image}" alt="${pin.title}" loading="lazy" />
+        <div class="pin-content">
+          <div class="pin-text">${pin.title}</div>
+          <button class="save-btn ${isSaved ? 'saved' : ''}" aria-pressed="${isSaved}" aria-label="${isSaved ? 'Unsave pin' : 'Save pin'}">${isSaved ? 'Saved' : 'Save'}</button>
+        </div>
+      `;
+
+      const saveBtn = pinEl.querySelector('.save-btn');
+      saveBtn.addEventListener('click', () => {
+        toggleSavePin(pin.id);
+      });
+
+      pinsGrid.appendChild(pinEl);
+    });
+  }
+
+  // Toggle save state of a pin
+  function toggleSavePin(id) {
+    const savedPins = loadSavedPins();
+    const index = savedPins.indexOf(id);
+    if (index === -1) {
+      savedPins.push(id);
+    } else {
+      savedPins.splice(index, 1);
+    }
+    saveSavedPins(savedPins);
+    applyFiltersAndRender();
+  }
+
+  // Filter pins based on search input
+  function filterPins(pins, query) {
+    if (!query) return pins;
+    return pins.filter(pin => pin.title.toLowerCase().includes(query.toLowerCase()));
+  }
+
+  // Handle search
+  const searchInput = document.getElementById('searchInput');
+  searchInput.addEventListener('input', () => {
+    applyFiltersAndRender();
+  });
+
+  // Render pins with filter and saved pins state
+  function applyFiltersAndRender() {
+    const query = searchInput.value.trim();
+    const savedPins = loadSavedPins();
+    const filteredPins = filterPins(pinsData, query);
+    renderPins(filteredPins, savedPins);
+  }
+
+  // Initial render
+  applyFiltersAndRender();
+</script>
+
+</body>
+</html>
+
